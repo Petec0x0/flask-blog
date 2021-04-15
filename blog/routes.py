@@ -1,13 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Mar 28 22:34:55 2021
-
-@author: x0
-"""
-
-from flask import Flask, render_template, url_for
-app = Flask(__name__)
+from . import app
+from flask import render_template, url_for, flash
+from .forms import RegisterForm, LoginForm
 
 posts = [
         {
@@ -32,3 +25,15 @@ def home():
 @app.route('/about')
 def about():
     return render_template('about.html', title='About')
+
+@app.route('/register')
+def register():
+    register_form = RegisterForm()
+
+    return render_template('register.html', title='Register', register_form=register_form)
+
+@app.route('/login')
+def login():
+    login_form = LoginForm()
+    
+    return render_template('login.html', title='Login', login_form=login_form)
