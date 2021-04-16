@@ -2,6 +2,7 @@
 {% block content %}
     <div class="container">
         <form method="POST" action="">
+            {{ login_form.hidden_tag() }}
             <div class="form-group">
                 {{ login_form.username.label() }}
                 {{ login_form.username(class="form-control") }}
