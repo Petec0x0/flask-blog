@@ -101,7 +101,7 @@ def create():
     if request.method == "POST":
         # get the post request values
         post_title = request.form.get('title')
-        post_slug = post_title.replace(' ', '-')
+        post_slug = post_title.replace(' ', '-').replace('?', '-')
         post_body = request.form.get('body')
         post_author = current_user.username
         # validate to make sure the fields are not empty
@@ -134,7 +134,60 @@ def detail_page(post_slug):
     return render_template('details.html', title=post.title, post=post)
 
 # route for the "Update post" page
-@app.route('/posts/update/<post_id>')
-def update_post(post_id):
-    
-    return render_template('update.html', title="Update -")
+@app.route('/posts/update/<post_slug>', methods=('GET', 'POST'))
+def update_post(post_slug):
+    # check if Update POST request is sent
+    if request.method == "POST":
+        # check if a post with the requested slug exists
+        post = Post.query.filter_by(slug=request.form.get('slug')).first()
+        if not post:
+            # return an error message if post doesn't exist
+            flash('Error: SOmething went wrong', category='danger')
+            return redirect(url_for('home'))
+        # verify if the current user have the permission to update the post
+        if not (post.author == current_user.username):
+            # return an error message if current user doesn't have authorization over this post
+            abort(301)
+        # update post
+        post.title = request.form.get('title')
+        post.body = request.form.get('body')
+
+        # commit update to the database
+        db.session.commit()
+        # return success message to the user about the update
+        flash('Post updated successfully', category='success')
+        return redirect(url_for('home'))
+
+
+    # find the post check if a post with the requested slug exists
+    post = Post.query.filter_by(slug=post_slug).first()
+    if not post:
+        # abort and return 404 if post does not exist
+        abort(404)
+
+    return render_template('update.html', title="Update -", post=post)
+
+# Delete post route
+@app.route('/post/delete', methods=('POST', 'GET'))
+def delete():
+    # check if delete POST request is sent
+    if request.method == "POST":
+        # check if a post with the requested id exists
+        post = Post.query.filter_by(id=request.form.get('id')).first()
+        if not post:
+            # return an error message if post doesn't exist
+            flash('Error: SOmething went wrong', category='danger')
+            return redirect(url_for('home'))
+        # verify if the current user have the permission to delete the post
+        if not (post.author == current_user.username):
+            # return an error message if current user doesn't have authorization over this post
+            abort(301)
+        # delete post 
+        Post.query.filter_by(id=request.form.get('id')).delete()
+        # commit changes to the database
+        db.session.commit()
+        # flash success message and return back to home page
+        flash('Post deleted successfully', category='info')
+        return redirect(url_for('home'))
+    else:
+        abort(301)
