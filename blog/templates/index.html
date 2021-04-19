@@ -1,15 +1,46 @@
 {% extends 'layout.html' %}
 {% block content %}
+    <style>
+      .dont-break-out {
+          /* These are technically the same, but use both */
+          overflow-wrap: break-word;
+          word-wrap: break-word;
+
+          -ms-word-break: break-all;
+          /* Instead use this non-standard one: */
+          word-break: break-word;
+
+          /* Adds a hyphen where the word breaks, if supported (No Blink) */
+          -ms-hyphens: auto;
+          -moz-hyphens: auto;
+          -webkit-hyphens: auto;
+          hyphens: auto;
+
+          }
+    </style>
+
     {% for post in posts %}
-        <article class="media content-section">
-          <div class="media-body">
-            <div class="article-metadata">
-              <a class="mr-2" href="user/{{ post.author }}">{{ post.author }}</a>
-              <small class="text-muted">{{ post.updated_at.strftime('%d %b %Y %I:%M %p') }}</small>
-            </div>
-            <h2><a class="article-title" href="posts/details/{{ post.slug }}">{{ post.title }}</a></h2>
-            <p class="article-content">{{ post.body[: 150] | safe }}...</p>
+        <div class="card mb-4">
+          <img class="card-img-top" src="http://placehold.it/750x300" alt="Card image cap">
+          <div class="card-body">
+            <h2 class="card-title"><a href="posts/details/{{ post.slug }}">{{ post.title }}</a></h2>
+            <hr>
+            <p class="card-text dont-break-out">{{ post.body[: 150] | safe }}...</p>
+            <hr>
+            {% if current_user.username == post.author %}
+              <div class="btn-group" role="group" aria-label="Basic example">
+                <a href="posts/update/{{ post.id }}" class="btn btn-primary mx-2">Update</a>
+                <form action="post/delete/{{ post.id }}" method="POST">
+                   <a class="btn btn-outline-danger float-right" type="submit">Delete</a>
+                </form>
+              </div>
+            {% endif %}
           </div>
-        </article>
+          <div class="card-footer text-muted">
+            Posted on {{ post.updated_at.strftime('%d %b %Y %I:%M %p') }} by
+            <a href="user/{{ post.author }}">{{ post.author }}</a>
+          </div>
+        </div>
+        <hr>
     {% endfor %}
 {% endblock %}

@@ -1,5 +1,5 @@
 from blog import app, db
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, abort
 from blog.forms import RegisterForm, LoginForm
 from blog.models import User, Post
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -104,16 +104,37 @@ def create():
         post_slug = post_title.replace(' ', '-')
         post_body = request.form.get('body')
         post_author = current_user.username
-        # create an object of the Post class
-        post = Post(title=post_title, slug=post_slug, body=post_body, author=post_author)
-        
-        # commit post to the database
-        db.session.add(post)
-        db.session.commit()
+        # validate to make sure the fields are not empty
+        if post_title and post_body:
+            # create an object of the Post class
+            post = Post(title=post_title, slug=post_slug, body=post_body, author=post_author)
+            # commit post to the database
+            db.session.add(post)
+            db.session.commit()
 
-        # flash success message
-        flash('Post created successfully', category='success')
-        # redirect to the home page
-        return redirect(url_for('home'))
+            # flash success message
+            flash('Post created successfully', category='success')
+            # redirect to the home page
+            return redirect(url_for('home'))
+        else:
+            # flash an error message if the fields are empty
+            flash('Fields cannot be empty', category='danger')
 
     return render_template('create.html', title='Create Post')
+
+# detail post page route
+@app.route('/posts/details/<post_slug>')
+def detail_page(post_slug):
+    # find the post check if a post with the requested slug exists
+    post = Post.query.filter_by(slug=post_slug).first()
+    if not post:
+        # abort and return 404 if post does not exist
+        abort(404)
+    
+    return render_template('details.html', title=post.title, post=post)
+
+# route for the "Update post" page
+@app.route('/posts/update/<post_id>')
+def update_post(post_id):
+    
+    return render_template('update.html', title="Update -")
